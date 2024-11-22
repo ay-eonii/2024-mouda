@@ -30,7 +30,7 @@ class BetRepositoryTest {
 		betRepository.save(betEntity2);
 
 		// when
-		List<BetEntity> betEntities = betRepository.findAllByBettingTimeAndLoserDarakbangMemberIdIsNull(
+		List<BetEntity> betEntities = betRepository.findAllByBettingTimeGreaterThanEqualAndLoserDarakbangMemberIdIsNull(
 			LocalDateTime.now().withSecond(0).withNano(0));
 
 		//then

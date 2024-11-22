@@ -30,6 +30,7 @@ public class BetService {
 	private final BetSorter betSorter;
 	private final ChatRoomFinder chatRoomFinder;
 	private final ChatRoomWriter chatRoomWriter;
+	private final BetScheduler betScheduler;
 
 	@Transactional(readOnly = true)
 	public BetFindAllResponses findAllBets(long darakbangId) {
@@ -49,6 +50,8 @@ public class BetService {
 		Bet bet = betRequest.toBet(darakbangMember.getId());
 		long savedBetId = betWriter.save(darakbangId, bet);
 		betWriter.participate(darakbangId, savedBetId, darakbangMember);
+		
+		betScheduler.scheduleDraw(bet, savedBetId);
 
 		return savedBetId;
 	}
