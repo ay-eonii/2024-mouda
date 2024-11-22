@@ -29,16 +29,17 @@ public class BetScheduler {
 	private final TaskScheduler taskScheduler;
 	private final ChatRoomWriter chatRoomWriter;
 
-	@Scheduled(cron = "${bet.schedule}")
-	public void performScheduledTask() {
-		List<Bet> bets = betFinder.findAllDrawableBet();
+	@Value("${bet.master}")
+	private boolean isMaster;
 
 	public void scheduleDraw(Bet bet, long betId) {
 		Instant startTime = bet.getBettingTime().toInstant(KST_OFFSET);
 		taskScheduler.schedule(() -> performScheduledTask(betId), startTime);
 	}
 
-		betWriter.saveAll(bets);
+	private void scheduleDraw(Bet bet) {
+		scheduleDraw(bet, bet.getId());
+	}
 
 	private void performScheduledTask(long betId) {
 		Bet bet = betFinder.find(betId);
@@ -46,5 +47,13 @@ public class BetScheduler {
 		betWriter.appendLoser(bet);
 
 		chatRoomWriter.append(bet.getId(), bet.getDarakbangId(), ChatRoomType.BET);
+	}
+
+	@PostConstruct
+	public void reloadTasks() {
+		if (isMaster) {
+			List<Bet> scheduledBets = betFinder.findAllScheduledBet();
+			scheduledBets.forEach(this::scheduleDraw);
+		}
 	}
 }
