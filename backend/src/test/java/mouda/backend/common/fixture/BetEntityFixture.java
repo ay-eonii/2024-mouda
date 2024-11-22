@@ -43,7 +43,7 @@ public class BetEntityFixture {
 	public static BetEntity getBetEntity(long darakbangId, long moimerId, LocalDateTime bettingTime) {
 		return BetEntity.builder()
 			.title("테바바보")
-			.bettingTime(bettingTime.withSecond(0).withNano(0))
+			.bettingTime(bettingTime)
 			.darakbangId(darakbangId)
 			.moimerId(moimerId)
 			.build();

@@ -36,15 +36,22 @@ public class BetFinder {
 		return createBet(betEntity);
 	}
 
+	public Bet find(long betEntityId) {
+		BetEntity betEntity = betRepository.findById(betEntityId)
+			.orElseThrow(() -> new BetException(HttpStatus.NOT_FOUND, BetErrorMessage.BET_NOT_FOUND));
+
+		return createBet(betEntity);
+	}
+
 	public List<Bet> findAllByDarakbangId(long darakbangId) {
 		List<BetEntity> betEntities = betRepository.findAllByDarakbangId(darakbangId);
 
 		return createBets(betEntities);
 	}
 
-	public List<Bet> findAllDrawableBet() {
-		List<BetEntity> betEntities = betRepository.findAllByBettingTimeAndLoserDarakbangMemberIdIsNull(
-			LocalDateTime.now().withSecond(0).withNano(0));
+	public List<Bet> findAllScheduledBet() {
+		List<BetEntity> betEntities = betRepository.findAllByBettingTimeGreaterThanEqualAndLoserDarakbangMemberIdIsNull(
+			LocalDateTime.now());
 
 		return createBets(betEntities);
 	}
