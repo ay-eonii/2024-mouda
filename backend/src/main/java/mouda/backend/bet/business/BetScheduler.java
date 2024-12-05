@@ -43,6 +43,9 @@ public class BetScheduler {
 
 	private void performScheduledTask(long betId) {
 		Bet bet = betFinder.find(betId);
+		if (bet.hasLoser()) {
+			return;
+		}
 		bet.draw();
 		betWriter.appendLoser(bet);
 
@@ -53,7 +56,8 @@ public class BetScheduler {
 	public void reloadTasks() {
 		if (isMaster) {
 			List<Bet> scheduledBets = betFinder.findAllScheduledBet();
-			scheduledBets.forEach(this::scheduleDraw);
+			scheduledBets.parallelStream()
+				.forEach(this::scheduleDraw);
 		}
 	}
 }
