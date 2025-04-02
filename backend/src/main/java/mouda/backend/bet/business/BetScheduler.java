@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import mouda.backend.bet.domain.Bet;
+import mouda.backend.bet.domain.BetDetails;
 import mouda.backend.bet.implement.BetFinder;
 import mouda.backend.bet.implement.BetWriter;
 import mouda.backend.chat.domain.ChatRoomType;
@@ -31,7 +32,7 @@ public class BetScheduler {
 
 	@Scheduled(cron = "0 * * * * *")
 	public void scheduleDraw() {
-		List<Bet> scheduledBet = betFinder.findAllScheduledBet(SCHEDULE_LOOKAHEAD_MINUTES);
+		List<BetDetails> scheduledBet = betFinder.findAllScheduledBet(SCHEDULE_LOOKAHEAD_MINUTES);
 		scheduledBet
 			.forEach(bet -> {
 				Instant startTime = bet.getBettingTime().toInstant(KST_OFFSET);

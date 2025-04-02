@@ -56,11 +56,13 @@ public class BetFinder {
 		return createBets(betEntities);
 	}
 
-	public List<Bet> findAllScheduledBet(int minutes) {
+	public List<BetDetails> findAllScheduledBet(int minutes) {
 		List<BetEntity> betEntities = betRepository.findAllByBettingTimeLessThanEqualAndLoserDarakbangMemberIdIsNull(
 			LocalDateTime.now().plusMinutes(minutes));
 
-		return createBets(betEntities);
+		return betEntities.stream()
+			.map(BetEntity::toBetDetails)
+			.toList();
 	}
 
 	private List<Bet> createBets(List<BetEntity> betEntities) {
