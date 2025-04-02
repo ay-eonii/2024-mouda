@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.awaitility.Awaitility.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
@@ -13,8 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import mouda.backend.bet.domain.Bet;
-import mouda.backend.bet.domain.Participant;
 import mouda.backend.bet.entity.BetDarakbangMemberEntity;
 import mouda.backend.bet.entity.BetEntity;
 import mouda.backend.bet.infrastructure.BetDarakbangMemberRepository;
@@ -48,26 +45,12 @@ class BetSchedulerTest extends DarakbangSetUp {
 		betDarakbangMemberRepository.save(new BetDarakbangMemberEntity(darakbangHogee, savedBet));
 		betDarakbangMemberRepository.save(new BetDarakbangMemberEntity(darakbangAnna, savedBet));
 
-		List<Participant> participants = betDarakbangMemberRepository.findAllDarakbangMemberByBetId(savedBet.getId())
-			.stream()
-			.map(darakbangMember -> new Participant(darakbangMember.getId(), darakbangMember.getNickname(),
-				darakbangMember.getProfile()))
-			.toList();
-
-		Bet bet = Bet.builder()
-			.betDetails(savedBet.toBetDetails())
-			.moimerId(savedBet.getMoimerId())
-			.loserId(savedBet.getLoserDarakbangMemberId())
-			.darakbangId(savedBet.getDarakbangId())
-			.participants(participants)
-			.build();
-
-		betScheduler.scheduleDraw(bet, savedBet.getId());
+		betScheduler.scheduleDraw();
 
 		// when & then
 		await()
-			.atLeast(4900, MILLISECONDS)
-			.atMost(5001, MILLISECONDS)
+			.atLeast(4950, MILLISECONDS)
+			.atMost(5050, MILLISECONDS)
 			.untilAsserted(() -> assertThat(hasLoser()).isTrue());
 
 		Optional<BetEntity> actual = betRepository.findById(1L);
