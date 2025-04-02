@@ -1,5 +1,6 @@
 package mouda.backend.bet.domain;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
 
@@ -67,5 +68,9 @@ public class Bet {
 
 	public boolean canNotParticipate() {
 		return hasLoser() || betDetails.pastBettingTime();
+	}
+
+	public LocalDateTime getBettingTime() {
+		return betDetails.getBettingTime();
 	}
 }

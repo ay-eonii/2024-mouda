@@ -37,6 +37,10 @@ public class BetWriter {
 		return betEntity.getId();
 	}
 
+	public void appendLoser(Bet bet) {
+		betRepository.save(BetEntity.from(bet));
+	}
+
 	public void participate(long darakbangId, long betId, DarakbangMember darakbangMember) {
 		Bet bet = betFinder.find(darakbangId, betId);
 		if (bet.canNotParticipate()) {

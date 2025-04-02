@@ -25,3 +25,4 @@ url:
 
 bet:
   schedule: "0 * * * * *" # 매분마다
+  master: false
