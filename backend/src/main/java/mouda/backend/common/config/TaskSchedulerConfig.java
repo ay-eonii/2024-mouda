@@ -10,7 +10,7 @@ public class TaskSchedulerConfig {
 	@Bean
 	public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
 		ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
-		threadPoolTaskScheduler.setPoolSize(3);
+		threadPoolTaskScheduler.setPoolSize(10);
 		threadPoolTaskScheduler.setThreadNamePrefix("ThreadPoolBetScheduler");
 		return threadPoolTaskScheduler;
 	}

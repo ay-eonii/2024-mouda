@@ -59,8 +59,9 @@ public class BetFinder {
 	}
 
 	public Map<LocalDateTime, List<BetDetails>> findAllScheduledBet(int minutes) {
-		List<BetEntity> betEntities = betRepository.findAllByBettingTimeLessThanEqualAndLoserDarakbangMemberIdIsNull(
-			LocalDateTime.now().plusMinutes(minutes));
+		LocalDateTime now = LocalDateTime.now();
+		List<BetEntity> betEntities = betRepository.findAllByBettingTimeGreaterThanAndBettingTimeLessThanEqualAndLoserDarakbangMemberIdIsNull(
+			now, now.plusSeconds(30));
 
 		return betEntities.stream()
 			.map(BetEntity::toBetDetails)

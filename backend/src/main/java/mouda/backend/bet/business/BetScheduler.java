@@ -35,7 +35,7 @@ public class BetScheduler {
 	private final TaskScheduler taskScheduler;
 	private final ChatRoomWriter chatRoomWriter;
 
-	@Scheduled(cron = "0 * * * * *")
+	@Scheduled(cron = "0/30 * * * * *")
 	public void scheduleDraw() {
 		Map<LocalDateTime, List<BetDetails>> scheduledBet = betFinder.findAllScheduledBet(SCHEDULE_LOOKAHEAD_MINUTES);
 		scheduledBet
