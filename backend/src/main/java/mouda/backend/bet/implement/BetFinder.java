@@ -2,6 +2,8 @@ package mouda.backend.bet.implement;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -56,13 +58,13 @@ public class BetFinder {
 		return createBets(betEntities);
 	}
 
-	public List<BetDetails> findAllScheduledBet(int minutes) {
+	public Map<LocalDateTime, List<BetDetails>> findAllScheduledBet(int minutes) {
 		List<BetEntity> betEntities = betRepository.findAllByBettingTimeLessThanEqualAndLoserDarakbangMemberIdIsNull(
 			LocalDateTime.now().plusMinutes(minutes));
 
 		return betEntities.stream()
 			.map(BetEntity::toBetDetails)
-			.toList();
+			.collect(Collectors.groupingBy(BetDetails::getBettingTime));
 	}
 
 	private List<Bet> createBets(List<BetEntity> betEntities) {
@@ -104,6 +106,13 @@ public class BetFinder {
 		return betDarakbangMemberRepository.findAllByDarakbangMemberId(darakbangMember.getId()).stream()
 			.map(BetDarakbangMemberEntity::getBet)
 			.map(BetEntity::toBetDetails)
+			.toList();
+	}
+
+	public List<Bet> findAll(List<Long> betIds) {
+		return betRepository.findAllById(betIds)
+			.stream()
+			.map(this::createBet)
 			.toList();
 	}
 }

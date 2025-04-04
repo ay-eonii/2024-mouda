@@ -1,5 +1,8 @@
 package mouda.backend.chat.implement;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
@@ -23,5 +26,17 @@ public class ChatRoomWriter {
 			.type(chatRoomType)
 			.build();
 		return chatRoomRepository.save(chatRoomEntity).getId();
+	}
+
+	public void append(Map<Long, Long> betInfos, ChatRoomType chatRoomType) {
+		List<ChatRoomEntity> chatRoomEntities = betInfos.entrySet().stream()
+			.map(entry -> ChatRoomEntity.builder()
+				.targetId(entry.getKey())
+				.darakbangId(entry.getValue())
+				.type(chatRoomType)
+				.build())
+			.toList();
+
+		chatRoomRepository.saveAll(chatRoomEntities);
 	}
 }

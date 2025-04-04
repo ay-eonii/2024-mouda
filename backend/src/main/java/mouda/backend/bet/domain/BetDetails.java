@@ -25,7 +25,9 @@ public class BetDetails {
 	}
 
 	public static BetDetails create(String title, int waitingMinutes) {
-		LocalDateTime bettingTime = LocalDateTime.now().plusMinutes(waitingMinutes);
+		LocalDateTime bettingTime = LocalDateTime.now()
+			.plusMinutes(waitingMinutes)
+			.withNano(0);
 
 		return BetDetails.builder()
 			.title(title)

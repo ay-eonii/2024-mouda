@@ -41,6 +41,13 @@ public class BetWriter {
 		betRepository.save(BetEntity.from(bet));
 	}
 
+	public void appendLoser(List<Bet> bets) {
+		List<BetEntity> betEntities = bets.stream()
+			.map(BetEntity::from)
+			.toList();
+		betRepository.saveAll(betEntities);
+	}
+
 	public void participate(long darakbangId, long betId, DarakbangMember darakbangMember) {
 		Bet bet = betFinder.find(darakbangId, betId);
 		if (bet.canNotParticipate()) {
