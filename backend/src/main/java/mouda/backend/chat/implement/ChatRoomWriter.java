@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 import mouda.backend.chat.domain.ChatRoomType;
 import mouda.backend.chat.entity.ChatRoomEntity;
+import mouda.backend.chat.infrastructure.ChatRoomJdbcRepository;
 import mouda.backend.chat.infrastructure.ChatRoomRepository;
 
 @Component
@@ -16,6 +17,7 @@ public class ChatRoomWriter {
 
 	private final ChatRoomRepository chatRoomRepository;
 	private final ChatRoomValidator chatRoomValidator;
+	private final ChatRoomJdbcRepository chatRoomJdbcRepository;
 
 	public long append(long targetId, long darakbangId, ChatRoomType chatRoomType) {
 		chatRoomValidator.validateAlreadyExists(targetId, chatRoomType);
@@ -37,6 +39,6 @@ public class ChatRoomWriter {
 				.build())
 			.toList();
 
-		chatRoomRepository.saveAll(chatRoomEntities);
+		chatRoomJdbcRepository.bulkInsertChatRooms(chatRoomEntities);
 	}
 }

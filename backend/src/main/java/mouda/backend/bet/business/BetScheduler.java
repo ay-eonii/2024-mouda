@@ -47,7 +47,6 @@ public class BetScheduler {
 	}
 
 	private void performScheduledTask(List<Long> betIds) {
-		long startTime = System.currentTimeMillis();
 		List<Bet> bets = betFinder.findAll(betIds);
 		bets.forEach(Bet::draw);
 		betWriter.appendLoser(bets);
@@ -55,7 +54,5 @@ public class BetScheduler {
 		Map<Long, Long> betInfos = bets.stream()
 			.collect(Collectors.toMap(Bet::getId, Bet::getDarakbangId));
 		chatRoomWriter.append(betInfos, ChatRoomType.BET);
-		long endTime = System.currentTimeMillis();
-		log.info("running time = {}", endTime - startTime);
 	}
 }
