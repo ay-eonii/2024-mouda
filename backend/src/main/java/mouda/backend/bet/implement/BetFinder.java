@@ -1,6 +1,8 @@
 package mouda.backend.bet.implement;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,6 +28,8 @@ import mouda.backend.darakbangmember.domain.DarakbangMember;
 @Transactional
 @RequiredArgsConstructor
 public class BetFinder {
+
+	private static final ZoneOffset KST_OFFSET = ZoneOffset.ofHours(9);
 
 	private final BetDarakbangMemberRepository betDarakbangMemberRepository;
 	private final BetRepository betRepository;
@@ -58,14 +62,15 @@ public class BetFinder {
 		return createBets(betEntities);
 	}
 
-	public Map<LocalDateTime, List<BetDetails>> findAllScheduledBet(int minutes) {
+	public Map<Instant, List<BetDetails>> findAllScheduledBet(int minutes) {
 		LocalDateTime now = LocalDateTime.now();
 		List<BetEntity> betEntities = betRepository.findAllByBettingTimeGreaterThanAndBettingTimeLessThanEqualAndLoserDarakbangMemberIdIsNull(
-			now, now.plusSeconds(30));
+			now, now.plusMinutes(minutes));
 
 		return betEntities.stream()
 			.map(BetEntity::toBetDetails)
-			.collect(Collectors.groupingBy(BetDetails::getBettingTime));
+			.collect(
+				Collectors.groupingBy(betDetails -> betDetails.getBettingTime().withNano(0).toInstant(KST_OFFSET)));
 	}
 
 	private List<Bet> createBets(List<BetEntity> betEntities) {
@@ -115,5 +120,22 @@ public class BetFinder {
 			.stream()
 			.map(this::createBet)
 			.toList();
+	}
+
+	public List<Bet> findAllWithParticipants(List<Long> betIds) {
+		Map<BetEntity, List<Participant>> participants = participantFinder.findAllByBetEntity(betIds);
+		return participants.entrySet().stream()
+			.map(entry -> toBet(entry.getKey(), entry.getValue()))
+			.toList();
+	}
+
+	private Bet toBet(BetEntity betEntity, List<Participant> participants) {
+		return Bet.builder()
+			.betDetails(betEntity.toBetDetails())
+			.moimerId(betEntity.getMoimerId())
+			.loserId(betEntity.getLoserDarakbangMemberId())
+			.darakbangId(betEntity.getDarakbangId())
+			.participants(participants)
+			.build();
 	}
 }

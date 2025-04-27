@@ -49,8 +49,8 @@ class BetSchedulerTest extends DarakbangSetUp {
 
 		// when & then
 		await()
-			.atLeast(4950, MILLISECONDS)
-			.atMost(5050, MILLISECONDS)
+			.atLeast(4000, MILLISECONDS)
+			.atMost(5000, MILLISECONDS)
 			.untilAsserted(() -> assertThat(hasLoser()).isTrue());
 
 		Optional<BetEntity> actual = betRepository.findById(1L);

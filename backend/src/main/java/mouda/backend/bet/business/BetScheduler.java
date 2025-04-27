@@ -1,8 +1,6 @@
 package mouda.backend.bet.business;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,9 +23,8 @@ import mouda.backend.chat.implement.ChatRoomWriter;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class BetScheduler {
+public class BetScheduler implements Scheduler {
 
-	private static final ZoneOffset KST_OFFSET = ZoneOffset.ofHours(9);
 	private static final int SCHEDULE_LOOKAHEAD_MINUTES = 1;
 
 	private final BetFinder betFinder;
@@ -35,19 +32,20 @@ public class BetScheduler {
 	private final TaskScheduler taskScheduler;
 	private final ChatRoomWriter chatRoomWriter;
 
-	@Scheduled(cron = "0/30 * * * * *")
+	@Override
+	@Scheduled(cron = "0 * * * * *")
 	public void scheduleDraw() {
-		Map<LocalDateTime, List<BetDetails>> scheduledBet = betFinder.findAllScheduledBet(SCHEDULE_LOOKAHEAD_MINUTES);
-		scheduledBet
-			.forEach((bettingTime, betDetails) -> {
-				Instant startTime = bettingTime.toInstant(KST_OFFSET);
+		Map<Instant, List<BetDetails>> scheduledBet = betFinder.findAllScheduledBet(SCHEDULE_LOOKAHEAD_MINUTES);
+
+		scheduledBet.
+			forEach((bettingTime, betDetails) -> {
 				List<Long> betIds = betDetails.stream().map(BetDetails::getId).toList();
-				taskScheduler.schedule(() -> performScheduledTask(betIds), startTime);
+				taskScheduler.schedule(() -> performScheduledTask(betIds), bettingTime);
 			});
 	}
 
 	private void performScheduledTask(List<Long> betIds) {
-		List<Bet> bets = betFinder.findAll(betIds);
+		List<Bet> bets = betFinder.findAllWithParticipants(betIds);
 		bets.forEach(Bet::draw);
 		betWriter.appendLoser(bets);
 

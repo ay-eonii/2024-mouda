@@ -30,7 +30,6 @@ public class BetService {
 	private final BetSorter betSorter;
 	private final ChatRoomFinder chatRoomFinder;
 	private final ChatRoomWriter chatRoomWriter;
-	private final BetScheduler betScheduler;
 
 	@Transactional(readOnly = true)
 	public BetFindAllResponses findAllBets(long darakbangId) {

@@ -15,6 +15,15 @@ public interface BetDarakbangMemberRepository extends JpaRepository<BetDarakbang
 	@Query("SELECT bdm.darakbangMember FROM BetDarakbangMemberEntity bdm WHERE bdm.bet.id = :betId ")
 	List<DarakbangMember> findAllDarakbangMemberByBetId(@Param("betId") Long betId);
 
+	@Query("""
+		    SELECT bdm
+		    FROM BetDarakbangMemberEntity bdm
+		    JOIN FETCH bdm.bet
+			JOIN FETCH bdm.darakbangMember
+		    WHERE bdm.bet.id IN :betIds
+		""")
+	List<BetDarakbangMemberEntity> findAllWithBet(@Param("betIds") List<Long> betIds);
+
 	List<BetDarakbangMemberEntity> findAllByBetId(Long id);
 
 	Optional<BetDarakbangMemberEntity> findByBetIdAndDarakbangMemberId(Long betId, Long loserDarakbangMemberId);
