@@ -49,7 +49,6 @@ public class BetService {
 		Bet bet = betRequest.toBet(darakbangMember.getId());
 		long savedBetId = betWriter.save(darakbangId, bet);
 		betWriter.participate(darakbangId, savedBetId, darakbangMember);
-
 		return savedBetId;
 	}
 

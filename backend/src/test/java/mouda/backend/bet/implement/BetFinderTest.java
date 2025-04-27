@@ -67,24 +67,26 @@ class BetFinderTest extends DarakbangSetUp {
 		assertThat(emptyBetDetails).hasSize(0);
 	}
 
-	@DisplayName("추첨 가능한 모든 안내면진다를 조회한다.")
+	@DisplayName("예약된 모든 안내면진다를 조회한다.")
 	@Test
 	void findAllDrawableBets() {
 		// given
 		long darakbangId = darakbang.getId();
-		BetEntity betEntity = BetEntityFixture.getBetEntity(darakbangId, darakbangAnna.getId());
+		BetEntity betEntity = BetEntityFixture.getBetEntity(darakbangId, darakbangAnna.getId(),
+			LocalDateTime.now().plusSeconds(10));
 		betRepository.save(betEntity);
 
 		long moudaDarakbangId = mouda.getId();
-		BetEntity betEntity2 = BetEntityFixture.getBetEntity(moudaDarakbangId, darakbangAnna.getId());
+		BetEntity betEntity2 = BetEntityFixture.getBetEntity(moudaDarakbangId, darakbangAnna.getId(),
+			LocalDateTime.now().plusMinutes(10));
 		betRepository.save(betEntity2);
 
 		BetEntity betEntity3 = BetEntityFixture.getBetEntity(moudaDarakbangId, darakbangAnna.getId(),
-			LocalDateTime.now().plusMinutes(10));
+			LocalDateTime.now().minusMinutes(1));
 		betRepository.save(betEntity3);
 
 		// when
-		List<Bet> bets = betFinder.findAllDrawableBet();
+		List<Bet> bets = betFinder.findAllScheduledBet();
 
 		//then
 		assertThat(bets).hasSize(2);

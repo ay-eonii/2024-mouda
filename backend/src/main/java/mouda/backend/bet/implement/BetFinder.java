@@ -1,7 +1,11 @@
 package mouda.backend.bet.implement;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -25,6 +29,8 @@ import mouda.backend.darakbangmember.domain.DarakbangMember;
 @RequiredArgsConstructor
 public class BetFinder {
 
+	private static final ZoneOffset KST_OFFSET = ZoneOffset.ofHours(9);
+
 	private final BetDarakbangMemberRepository betDarakbangMemberRepository;
 	private final BetRepository betRepository;
 	private final ParticipantFinder participantFinder;
@@ -36,17 +42,35 @@ public class BetFinder {
 		return createBet(betEntity);
 	}
 
+	public Bet find(long betEntityId) {
+		BetEntity betEntity = betRepository.findById(betEntityId)
+			.orElseThrow(() -> new BetException(HttpStatus.NOT_FOUND, BetErrorMessage.BET_NOT_FOUND));
+
+		return createBet(betEntity);
+	}
+
 	public List<Bet> findAllByDarakbangId(long darakbangId) {
 		List<BetEntity> betEntities = betRepository.findAllByDarakbangId(darakbangId);
 
 		return createBets(betEntities);
 	}
 
-	public List<Bet> findAllDrawableBet() {
-		List<BetEntity> betEntities = betRepository.findAllByBettingTimeAndLoserDarakbangMemberIdIsNull(
-			LocalDateTime.now().withSecond(0).withNano(0));
+	public List<Bet> findAllScheduledBet() {
+		List<BetEntity> betEntities = betRepository.findAllByBettingTimeGreaterThanEqualAndLoserDarakbangMemberIdIsNull(
+			LocalDateTime.now());
 
 		return createBets(betEntities);
+	}
+
+	public Map<Instant, List<BetDetails>> findAllScheduledBet(int minutes) {
+		LocalDateTime now = LocalDateTime.now();
+		List<BetEntity> betEntities = betRepository.findAllByBettingTimeGreaterThanAndBettingTimeLessThanEqualAndLoserDarakbangMemberIdIsNull(
+			now, now.plusMinutes(minutes));
+
+		return betEntities.stream()
+			.map(BetEntity::toBetDetails)
+			.collect(
+				Collectors.groupingBy(betDetails -> betDetails.getBettingTime().withNano(0).toInstant(KST_OFFSET)));
 	}
 
 	private List<Bet> createBets(List<BetEntity> betEntities) {
@@ -89,5 +113,29 @@ public class BetFinder {
 			.map(BetDarakbangMemberEntity::getBet)
 			.map(BetEntity::toBetDetails)
 			.toList();
+	}
+
+	public List<Bet> findAll(List<Long> betIds) {
+		return betRepository.findAllById(betIds)
+			.stream()
+			.map(this::createBet)
+			.toList();
+	}
+
+	public List<Bet> findAllWithParticipants(List<Long> betIds) {
+		Map<BetEntity, List<Participant>> participants = participantFinder.findAllByBetEntity(betIds);
+		return participants.entrySet().stream()
+			.map(entry -> toBet(entry.getKey(), entry.getValue()))
+			.toList();
+	}
+
+	private Bet toBet(BetEntity betEntity, List<Participant> participants) {
+		return Bet.builder()
+			.betDetails(betEntity.toBetDetails())
+			.moimerId(betEntity.getMoimerId())
+			.loserId(betEntity.getLoserDarakbangMemberId())
+			.darakbangId(betEntity.getDarakbangId())
+			.participants(participants)
+			.build();
 	}
 }

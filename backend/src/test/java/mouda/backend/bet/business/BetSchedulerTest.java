@@ -1,5 +1,9 @@
 package mouda.backend.bet.business;
 
+import static java.util.concurrent.TimeUnit.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.awaitility.Awaitility.*;
+
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -32,27 +36,27 @@ class BetSchedulerTest extends DarakbangSetUp {
 		// given
 		BetEntity betEntity = BetEntity.builder()
 			.title("testBet")
-			.bettingTime(LocalDateTime.now()
-				.withSecond(0)
-				.withNano(0))
+			.bettingTime(LocalDateTime.now().plusSeconds(5))
 			.darakbangId(1L)
 			.moimerId(1L)
 			.build();
 
-		betRepository.save(betEntity);
+		BetEntity savedBet = betRepository.save(betEntity);
+		betDarakbangMemberRepository.save(new BetDarakbangMemberEntity(darakbangHogee, savedBet));
+		betDarakbangMemberRepository.save(new BetDarakbangMemberEntity(darakbangAnna, savedBet));
 
-		betDarakbangMemberRepository.save(new BetDarakbangMemberEntity(darakbangHogee, betEntity));
-		betDarakbangMemberRepository.save(new BetDarakbangMemberEntity(darakbangAnna, betEntity));
+		betScheduler.scheduleDraw();
 
 		// when & then
-		// await()
-		// 	.atMost(1, MINUTES)
-		// 	.untilAsserted(() -> assertThat(hasLoser()).isTrue());
-		//
-		// Optional<BetEntity> savedBet = betRepository.findById(1L);
-		// assertThat(savedBet).isPresent();
-		// assertThat(savedBet.get().getLoserDarakbangMemberId()).isNotNull();
-		// assertThat(savedBet.get().getDarakbangId()).isEqualTo(1L);
+		await()
+			.atLeast(4000, MILLISECONDS)
+			.atMost(5000, MILLISECONDS)
+			.untilAsserted(() -> assertThat(hasLoser()).isTrue());
+
+		Optional<BetEntity> actual = betRepository.findById(1L);
+		assertThat(actual).isPresent();
+		assertThat(actual.get().getLoserDarakbangMemberId()).isNotNull();
+		assertThat(actual.get().getDarakbangId()).isEqualTo(1L);
 	}
 
 	private boolean hasLoser() {
