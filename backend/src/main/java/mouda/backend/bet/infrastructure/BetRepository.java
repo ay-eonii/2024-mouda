@@ -15,4 +15,7 @@ public interface BetRepository extends JpaRepository<BetEntity, Long> {
 	Optional<BetEntity> findByIdAndDarakbangId(long darakbangId, long betEntityId);
 
 	List<BetEntity> findAllByBettingTimeGreaterThanEqualAndLoserDarakbangMemberIdIsNull(LocalDateTime localDateTime);
+
+	List<BetEntity> findAllByBettingTimeGreaterThanAndBettingTimeLessThanEqualAndLoserDarakbangMemberIdIsNull(
+		LocalDateTime now, LocalDateTime bettingTime);
 }
